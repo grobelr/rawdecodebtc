@@ -1,4 +1,4 @@
-package decoderawbtc
+package rawdecodebtc
 
 import (
 	"encoding/hex"
@@ -12,8 +12,38 @@ import (
 	"github.com/btcsuite/btcutil"
 )
 
-//DecodeRawFromHex decodes raw transaction from Hex Message
-func DecodeRawFromHex(message string, net string) (txReply btcjson.TxRawDecodeResult, err error) {
+//FromMessage decodes raw transaction from raw payload
+func FromMessage(rawTx []byte, net string) (txReply btcjson.TxRawDecodeResult, err error) {
+	var cparam *chaincfg.Params
+	switch net {
+	case "regtest":
+		cparam = regtest
+	case "testnet":
+		cparam = testnet
+	default:
+		cparam = mainnet
+	}
+
+	r := strings.NewReader(string(rawTx))
+	var mtx wire.MsgTx
+	err = mtx.Deserialize(r)
+	if err != nil {
+		return
+	}
+
+	// Create and return the result.
+	txReply = btcjson.TxRawDecodeResult{
+		Txid:     mtx.TxHash().String(),
+		Version:  mtx.Version,
+		Locktime: mtx.LockTime,
+		Vin:      createVinList(&mtx),
+		Vout:     createVoutList(&mtx, cparam, nil),
+	}
+	return
+}
+
+//FromHex decodes raw transaction from Hex payload
+func FromHex(message string, net string) (txReply btcjson.TxRawDecodeResult, err error) {
 	hexDecodedTx, err := HexDecodeRawTxString(message)
 
 	var cparam *chaincfg.Params
@@ -41,7 +71,6 @@ func DecodeRawFromHex(message string, net string) (txReply btcjson.TxRawDecodeRe
 		Vin:      createVinList(&mtx),
 		Vout:     createVoutList(&mtx, cparam, nil),
 	}
-
 	return
 }
 

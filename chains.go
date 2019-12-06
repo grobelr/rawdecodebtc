@@ -1,4 +1,4 @@
-package decoderawbtc
+package rawdecodebtc
 
 import "github.com/btcsuite/btcd/chaincfg"
 

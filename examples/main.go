@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	decoderawbtc "github.com/grobelr/rawdecodebtc"
+	"github.com/grobelr/rawdecodebtc"
 	"github.com/hokaccha/go-prettyjson"
 )
 
@@ -14,7 +14,7 @@ const (
 )
 
 func main() {
-	s, err := decoderawbtc.DecodeRawFromHex(serializedTx, "regtest")
+	s, err := rawdecodebtc.DecodeRawFromHex(serializedTx, "regtest")
 	if err != nil {
 		fmt.Println(err)
 	}
