@@ -36,8 +36,31 @@ func FromMessage(rawTx []byte, net string) (txReply btcjson.TxRawDecodeResult, e
 		Txid:     mtx.TxHash().String(),
 		Version:  mtx.Version,
 		Locktime: mtx.LockTime,
-		Vin:      createVinList(&mtx),
-		Vout:     createVoutList(&mtx, cparam, nil),
+		Vin:      CreateVinList(&mtx),
+		Vout:     CreateVoutList(&mtx, cparam, nil),
+	}
+	return
+}
+
+//FromWire decodes wire msg
+func FromWire(mtx *wire.MsgTx, net string) (txReply btcjson.TxRawDecodeResult, err error) {
+	var cparam *chaincfg.Params
+	switch net {
+	case "regtest":
+		cparam = regtest
+	case "testnet":
+		cparam = testnet
+	default:
+		cparam = mainnet
+	}
+
+	// Create and return the result.
+	txReply = btcjson.TxRawDecodeResult{
+		Txid:     mtx.TxHash().String(),
+		Version:  mtx.Version,
+		Locktime: mtx.LockTime,
+		Vin:      CreateVinList(mtx),
+		Vout:     CreateVoutList(mtx, cparam, nil),
 	}
 	return
 }
@@ -68,15 +91,15 @@ func FromHex(message string, net string) (txReply btcjson.TxRawDecodeResult, err
 		Txid:     mtx.TxHash().String(),
 		Version:  mtx.Version,
 		Locktime: mtx.LockTime,
-		Vin:      createVinList(&mtx),
-		Vout:     createVoutList(&mtx, cparam, nil),
+		Vin:      CreateVinList(&mtx),
+		Vout:     CreateVoutList(&mtx, cparam, nil),
 	}
 	return
 }
 
-// createVinList returns a slice of JSON objects for the inputs of the passed
+// CreateVinList returns a slice of JSON objects for the inputs of the passed
 // transaction.
-func createVinList(mtx *wire.MsgTx) []btcjson.Vin {
+func CreateVinList(mtx *wire.MsgTx) []btcjson.Vin {
 	// Coinbase transactions only have a single txin by definition.
 	vinList := make([]btcjson.Vin, len(mtx.TxIn))
 	if blockchain.IsCoinBaseTx(mtx) {
@@ -110,9 +133,9 @@ func createVinList(mtx *wire.MsgTx) []btcjson.Vin {
 	return vinList
 }
 
-// createVoutList returns a slice of JSON objects for the outputs of the passed
+// CreateVoutList returns a slice of JSON objects for the outputs of the passed
 // transaction.
-func createVoutList(mtx *wire.MsgTx, chainParams *chaincfg.Params, filterAddrMap map[string]struct{}) []btcjson.Vout {
+func CreateVoutList(mtx *wire.MsgTx, chainParams *chaincfg.Params, filterAddrMap map[string]struct{}) []btcjson.Vout {
 	voutList := make([]btcjson.Vout, 0, len(mtx.TxOut))
 	for i, v := range mtx.TxOut {
 		// The disassembled string will contain [error] inline if the
