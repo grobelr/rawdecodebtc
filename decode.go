@@ -12,8 +12,19 @@ import (
 	"github.com/btcsuite/btcutil"
 )
 
+// TxRawDecodeResult models the data from the decoderawtransaction command.
+type TxRawDecodeResult struct {
+	Txid                  string         `json:"txid"`
+	Version               int32          `json:"version"`
+	Locktime              uint32         `json:"locktime"`
+	SerializeSizeStripped int            `json:"sizestripped"`
+	SerializeSize         int            `json:"size"`
+	Vin                   []btcjson.Vin  `json:"vin"`
+	Vout                  []btcjson.Vout `json:"vout"`
+}
+
 //FromMessage decodes raw transaction from raw payload
-func FromMessage(rawTx []byte, net string) (txReply btcjson.TxRawDecodeResult, err error) {
+func FromMessage(rawTx []byte, net string) (txReply TxRawDecodeResult, err error) {
 	var cparam *chaincfg.Params
 	switch net {
 	case "regtest":
@@ -32,18 +43,20 @@ func FromMessage(rawTx []byte, net string) (txReply btcjson.TxRawDecodeResult, e
 	}
 
 	// Create and return the result.
-	txReply = btcjson.TxRawDecodeResult{
-		Txid:     mtx.TxHash().String(),
-		Version:  mtx.Version,
-		Locktime: mtx.LockTime,
-		Vin:      CreateVinList(&mtx),
-		Vout:     CreateVoutList(&mtx, cparam, nil),
+	txReply = TxRawDecodeResult{
+		Txid:                  mtx.TxHash().String(),
+		Version:               mtx.Version,
+		Locktime:              mtx.LockTime,
+		SerializeSize:         mtx.SerializeSize(),
+		SerializeSizeStripped: mtx.SerializeSizeStripped(),
+		Vin:                   CreateVinList(&mtx),
+		Vout:                  CreateVoutList(&mtx, cparam, nil),
 	}
 	return
 }
 
 //FromWire decodes wire msg
-func FromWire(mtx *wire.MsgTx, net string) (txReply btcjson.TxRawDecodeResult, err error) {
+func FromWire(mtx *wire.MsgTx, net string) (txReply TxRawDecodeResult, err error) {
 	var cparam *chaincfg.Params
 	switch net {
 	case "regtest":
@@ -55,18 +68,20 @@ func FromWire(mtx *wire.MsgTx, net string) (txReply btcjson.TxRawDecodeResult, e
 	}
 
 	// Create and return the result.
-	txReply = btcjson.TxRawDecodeResult{
-		Txid:     mtx.TxHash().String(),
-		Version:  mtx.Version,
-		Locktime: mtx.LockTime,
-		Vin:      CreateVinList(mtx),
-		Vout:     CreateVoutList(mtx, cparam, nil),
+	txReply = TxRawDecodeResult{
+		Txid:                  mtx.TxHash().String(),
+		Version:               mtx.Version,
+		Locktime:              mtx.LockTime,
+		SerializeSize:         mtx.SerializeSize(),
+		SerializeSizeStripped: mtx.SerializeSizeStripped(),
+		Vin:                   CreateVinList(mtx),
+		Vout:                  CreateVoutList(mtx, cparam, nil),
 	}
 	return
 }
 
 //FromHex decodes raw transaction from Hex payload
-func FromHex(message string, net string) (txReply btcjson.TxRawDecodeResult, err error) {
+func FromHex(message string, net string) (txReply TxRawDecodeResult, err error) {
 	hexDecodedTx, err := HexDecodeRawTxString(message)
 
 	var cparam *chaincfg.Params
@@ -87,12 +102,14 @@ func FromHex(message string, net string) (txReply btcjson.TxRawDecodeResult, err
 	}
 
 	// Create and return the result.
-	txReply = btcjson.TxRawDecodeResult{
-		Txid:     mtx.TxHash().String(),
-		Version:  mtx.Version,
-		Locktime: mtx.LockTime,
-		Vin:      CreateVinList(&mtx),
-		Vout:     CreateVoutList(&mtx, cparam, nil),
+	txReply = TxRawDecodeResult{
+		Txid:                  mtx.TxHash().String(),
+		Version:               mtx.Version,
+		Locktime:              mtx.LockTime,
+		SerializeSize:         mtx.SerializeSize(),
+		SerializeSizeStripped: mtx.SerializeSizeStripped(),
+		Vin:                   CreateVinList(&mtx),
+		Vout:                  CreateVoutList(&mtx, cparam, nil),
 	}
 	return
 }
